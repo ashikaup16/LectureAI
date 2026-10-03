@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LectureAI — AI-Powered Lecture Summarization, Notes & Quiz System</title>
+  <meta name="description" content="Transform any YouTube lecture or class recording into executive summaries, Cornell notes, interactive quizzes, and flashcards instantly with AI.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Canvas Confetti for Quiz Celebrations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body class="dark-theme">
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- App Header / Navbar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand" id="brand-logo" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+            <path d="M6 6h10"></path>
+            <path d="M6 10h10"></path>
+            <path d="M6 14h6"></path>
+            <circle cx="18" cy="16" r="3" fill="#6366f1" stroke="none"></circle>
+            <path d="m17 16 1 1 2-2" stroke="#fff" stroke-width="1.5"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Lecture<span class="gradient-text">AI</span></span>
+          <span class="brand-tag">Academic Intelligence</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="ai-status-pill" id="ai-status-pill" title="AI Generation Mode">
+          <span class="pulse-dot"></span>
+          <span id="ai-status-text">AI Engine Ready</span>
+        </div>
+        <button class="icon-btn" id="btn-open-settings" title="Settings & API Key" aria-label="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span class="btn-label">API Settings</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero & Input Section -->
+  <main class="main-wrapper">
+    <section class="hero-section" id="hero-section">
+      <div class="hero-badge">
+        <span class="sparkle">✨</span> Next-Gen Multi-Modal Learning Platform
+      </div>
+      <h1 class="hero-title">
+        Turn Any Lecture Video Into <br>
+        <span class="gradient-text text-glow">Structured Notes & Interactive Quizzes</span>
+      </h1>
+      <p class="hero-subtitle">
+        Paste any YouTube lecture link, university recording, or class talk. LectureAI instantly extracts the transcript, synthesizes Cornell notes, key takeaways, flashcards, and quizzes.
+      </p>
+
+      <!-- Input Card -->
+      <div class="input-card glass-panel" id="input-card">
+        <div class="input-tabs">
+          <button class="tab-btn active" id="tab-yt-btn" data-target="panel-youtube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+            YouTube Class Link
+          </button>
+          <button class="tab-btn" id="tab-text-btn" data-target="panel-text">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Paste Lecture Text / Transcript
+          </button>
+        </div>
+
+        <!-- YouTube Input Panel -->
+        <div class="tab-panel active" id="panel-youtube">
+          <form id="form-youtube" class="url-input-form" onsubmit="return false;">
+            <div class="input-group">
+              <div class="input-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+              </div>
+              <input 
+                type="url" 
+                id="input-youtube-url" 
+                class="main-text-input" 
+                placeholder="https://www.youtube.com/watch?v=... or youtu.be/..." 
+                autocomplete="off" 
+                required
+              />
+              <button type="submit" id="btn-analyze-youtube" class="primary-btn glow-on-hover">
+                <span class="btn-text">Generate Notes & Quiz</span>
+                <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Custom Text Input Panel -->
+        <div class="tab-panel" id="panel-text">
+          <form id="form-text" class="text-input-form" onsubmit="return false;">
+            <input 
+              type="text" 
+              id="input-custom-title" 
+              class="sub-text-input" 
+              placeholder="Lecture Title (e.g. Stanford CS229: Gradient Descent)"
+            />
+            <textarea 
+              id="input-custom-text" 
+              class="main-textarea" 
+              placeholder="Paste raw transcript, meeting notes, or textbook chapter here (minimum 50 words)..." 
+              rows="5"
+            ></textarea>
+            <div class="text-action-row">
+              <span class="word-counter" id="word-counter">0 words</span>
+              <button type="submit" id="btn-analyze-text" class="primary-btn glow-on-hover">
+                <span class="btn-text">Synthesize Lecture</span>
+                <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Sample Lectures (1-Click Demo) -->
+        <div class="samples-container">
+          <div class="samples-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span>Or try an instant sample lecture:</span>
+          </div>
+          <div class="samples-grid" id="samples-grid">
+            <!-- Dynamically populated or static fallbacks -->
+            <button class="sample-chip" data-video-id="aircAruvnKk" data-title="Neural Networks | 3Blue1Brown">
+              <span class="chip-badge">AI</span>
+              <span class="chip-title">3Blue1Brown: Neural Networks</span>
+            </button>
+            <button class="sample-chip" data-video-id="8hly31xKli0" data-title="Algorithms & Big O | freeCodeCamp">
+              <span class="chip-badge">CS</span>
+              <span class="chip-title">Algorithms & Big O</span>
+            </button>
+            <button class="sample-chip" data-video-id="lZ3bPUKo5qc" data-title="Quantum Mechanics | MIT">
+              <span class="chip-badge">Physics</span>
+              <span class="chip-title">MIT: Quantum Mechanics</span>
+            </button>
+            <button class="sample-chip" data-video-id="Mde2q7GFCrw" data-title="Neuroscience of Learning | Huberman">
+              <span class="chip-badge">Bio</span>
+              <span class="chip-title">Huberman: Focus & Memory</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading State View -->
+    <section class="loading-section hidden" id="loading-section">
+      <div class="loading-card glass-panel">
+        <div class="spinner-container">
+          <div class="atom-spinner">
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-3"></div>
+            <div class="spark-center"></div>
+          </div>
+        </div>
+        <h3 class="loading-title" id="loading-title">Extracting Lecture Content...</h3>
+        <p class="loading-subtitle" id="loading-subtitle">Retrieving subtitles, processing speech chunks, and synthesizing concepts...</p>
+        
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+        <div class="loading-steps" id="loading-steps">
+          <div class="step-item active" id="step-fetch">1. Fetching YouTube captions</div>
+          <div class="step-item" id="step-analyze">2. Extracting key themes & timestamps</div>
+          <div class="step-item" id="step-notes">3. Formatting Cornell notes & takeaways</div>
+          <div class="step-item" id="step-quiz">4. Generating quiz questions & flashcards</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error Banner -->
+    <div class="error-banner hidden" id="error-banner">
+      <div class="error-icon">⚠️</div>
+      <div class="error-content">
+        <h4 id="error-title">Processing Error</h4>
+        <p id="error-message">Could not process this video.</p>
+      </div>
+      <button class="error-close" id="btn-close-error" aria-label="Close Error">&times;</button>
+    </div>
+
+    <!-- Results Workspace (Appears after analysis) -->
+    <section class="workspace-section hidden" id="workspace-section">
+      
+      <!-- Video / Lecture Meta Header Banner -->
+      <div class="lecture-meta-card glass-panel" id="lecture-meta-card">
+        <div class="meta-left">
+          <div class="video-preview-thumb" id="video-preview-thumb">
+            <img id="meta-thumb-img" src="" alt="Thumbnail" />
+            <div class="play-overlay">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </div>
+          </div>
+          <div class="meta-details">
+            <div class="meta-tags">
+              <span class="meta-tag pill-duration" id="meta-duration">00:00</span>
+              <span class="meta-tag pill-provider" id="meta-provider">AI Synthesized</span>
+              <span class="meta-tag pill-date" id="meta-date">Lecture</span>
+            </div>
+            <h2 class="meta-title" id="meta-title">Lecture Title</h2>
+            <p class="meta-author" id="meta-author">By Channel / Speaker</p>
+          </div>
+        </div>
+        <div class="meta-actions">
+          <button class="action-btn" id="btn-toggle-video-player" title="Open Video Player">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span id="player-toggle-text">Show Video</span>
+          </button>
+          <div class="export-dropdown-wrapper">
+            <button class="action-btn primary-action" id="btn-export-menu">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export Study Kit</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="export-menu hidden" id="export-menu">
+              <button class="export-opt" id="opt-export-pdf">
+                <span class="export-icon">📄</span>
+                <span class="export-title">Print / Save as PDF</span>
+              </button>
+              <button class="export-opt" id="opt-export-md">
+                <span class="export-icon">📝</span>
+                <span class="export-title">Download Markdown (.md)</span>
+              </button>
+              <button class="export-opt" id="opt-export-txt">
+                <span class="export-icon">📋</span>
+                <span class="export-title">Download Plain Text (.txt)</span>
+              </button>
+              <button class="export-opt" id="opt-copy-all">
+                <span class="export-icon">✨</span>
+                <span class="export-title">Copy Notes to Clipboard</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Synchronized Embedded Video Player Drawer -->
+      <div class="video-drawer-container hidden" id="video-drawer-container">
+        <div class="video-player-wrapper">
+          <div id="yt-player-iframe-mount"></div>
+          <div class="video-controls-bar">
+            <span class="player-status" id="player-time-indicator">Click timestamps anywhere in notes to seek video</span>
+            <button class="btn-close-player" id="btn-close-player" title="Hide Player">Close Video &times;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Feature Tabs -->
+      <div class="feature-tabs-bar glass-panel" id="feature-tabs-bar">
+        <button class="nav-tab active" data-tab="tab-summary" id="btn-tab-summary">
+          <span class="tab-icon">📌</span>
+          <span class="tab-text">Summary & TL;DR</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-notes" id="btn-tab-notes">
+          <span class="tab-icon">📖</span>
+          <span class="tab-text">Cornell Notes</span>
+          <span class="tab-badge">Full Guide</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-quiz" id="btn-tab-quiz">
+          <span class="tab-icon">🎯</span>
+          <span class="tab-text">Interactive Quiz</span>
+          <span class="tab-badge count" id="badge-quiz-count">5 Qs</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-flashcards" id="btn-tab-flashcards">
+          <span class="tab-icon">🗂️</span>
+          <span class="tab-text">Flashcards</span>
+          <span class="tab-badge count" id="badge-card-count">8 Cards</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-chat" id="btn-tab-chat">
+          <span class="tab-icon">💬</span>
+          <span class="tab-text">AI Lecture Tutor</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-transcript" id="btn-tab-transcript">
+          <span class="tab-icon">📜</span>
+          <span class="tab-text">Transcript</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: SUMMARY -->
+      <div class="tab-content active" id="tab-summary">
+        <div class="summary-layout">
+          <!-- Executive TLDR Box -->
+          <div class="content-card glass-panel highlight-border">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="section-icon">⚡</span>
+                <h3 class="card-title">Executive Summary (TL;DR)</h3>
+              </div>
+              <span class="reading-time" id="summary-reading-time">3 min read</span>
+            </div>
+            <p class="tldr-text" id="summary-tldr">Executive summary loading...</p>
+            
+            <!-- Key Concepts Chips -->
+            <div class="key-concepts-container">
+              <span class="concepts-label">Core Concepts:</span>
+              <div class="concepts-chips" id="summary-concepts-chips"></div>
+            </div>
+          </div>
+
+          <!-- Key Takeaways Grid -->
+          <div class="content-card glass-panel">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="section-icon">🎯</span>
+                <h3 class="card-title">Essential Takeaways</h3>
+              </div>
+              <span class="card-hint">Click any timestamp to play video</span>
+            </div>
+            <div class="takeaways-grid" id="summary-takeaways-grid"></div>
+          </div>
+
+          <!-- Topic Breakdown Sections -->
+          <div class="content-card glass-panel">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="section-icon">📚</span>
+                <h3 class="card-title">Topic-by-Topic Breakdown</h3>
+              </div>
+            </div>
+            <div class="topics-timeline" id="summary-topics-timeline"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: CORNELL NOTES & MARKDOWN -->
+      <div class="tab-content" id="tab-notes">
+        <div class="notes-toolbar glass-panel">
+          <div class="notes-view-selector">
+            <button class="view-opt-btn active" id="btn-view-cornell">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+                <line x1="3" y1="17" x2="21" y2="17"></line>
+              </svg>
+              Cornell Format
+            </button>
+            <button class="view-opt-btn" id="btn-view-markdown">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              Markdown Document
+            </button>
+          </div>
+          <div class="notes-tools">
+            <button class="tool-btn" id="btn-copy-notes" title="Copy formatted text">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy</span>
+            </button>
+            <button class="tool-btn" id="btn-print-notes" title="Print notes">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              <span>Print</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Cornell View -->
+        <div class="cornell-table-wrapper content-card glass-panel" id="cornell-view-container">
+          <div class="cornell-header-grid">
+            <div class="cornell-col-header cues-header">
+              <span>CUES & STUDY QUESTIONS</span>
+            </div>
+            <div class="cornell-col-header notes-header">
+              <span>LECTURE NOTES & OBSERVATIONS</span>
+            </div>
+          </div>
+          <div class="cornell-body" id="cornell-rows-container"></div>
+          <div class="cornell-footer">
+            <div class="cornell-summary-label">SUMMARY:</div>
+            <div class="cornell-summary-content" id="cornell-summary-text"></div>
+          </div>
+        </div>
+
+        <!-- Markdown Document View -->
+        <div class="markdown-view-wrapper content-card glass-panel hidden" id="markdown-view-container">
+          <div class="markdown-rendered-content" id="markdown-rendered-content"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: QUIZ -->
+      <div class="tab-content" id="tab-quiz">
+        <div class="quiz-container">
+          <!-- Quiz Dashboard / Score Header -->
+          <div class="quiz-header-card glass-panel">
+            <div class="quiz-status-left">
+              <h3 class="quiz-title" id="quiz-title">Knowledge Assessment</h3>
+              <p class="quiz-subtitle">Test your retention of core lecture concepts with instant answers and explanations.</p>
+            </div>
+            <div class="quiz-status-right">
+              <div class="score-card">
+                <span class="score-label">Score</span>
+                <span class="score-value" id="quiz-score-display">0 / 5</span>
+              </div>
+              <button class="btn-reset-quiz" id="btn-reset-quiz" title="Reset Quiz">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                <span>Retake</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Questions List -->
+          <div class="questions-list" id="questions-list"></div>
+
+          <!-- Quiz Completion Banner -->
+          <div class="quiz-completion-banner glass-panel hidden" id="quiz-completion-banner">
+            <div class="completion-icon" id="completion-icon">🏆</div>
+            <h3 class="completion-title" id="completion-title">Quiz Completed!</h3>
+            <p class="completion-desc" id="completion-desc">You scored 5 out of 5 (100%). Outstanding retention!</p>
+            <div class="completion-actions">
+              <button class="primary-btn" id="btn-retake-finished">Retake Quiz</button>
+              <button class="secondary-btn" id="btn-review-flashcards">Review Flashcards</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: FLASHCARDS -->
+      <div class="tab-content" id="tab-flashcards">
+        <div class="flashcards-wrapper">
+          <div class="flashcard-controls-top glass-panel">
+            <div class="card-progress">
+              Card <span id="current-card-num">1</span> of <span id="total-card-num">8</span>
+            </div>
+            <div class="mastery-tracker">
+              <span class="tag-mastered">Mastered: <b id="mastered-count">0</b></span>
+              <span class="tag-review">To Review: <b id="review-count">0</b></span>
+            </div>
+          </div>
+
+          <!-- 3D Flip Card Container -->
+          <div class="flashcard-scene" id="flashcard-scene">
+            <div class="flashcard-inner" id="flashcard-inner">
+              <!-- Front -->
+              <div class="flashcard-face flashcard-front">
+                <div class="card-chip">QUESTION / CONCEPT</div>
+                <div class="card-content" id="card-front-text">What is the core principle of this lecture?</div>
+                <div class="card-footer-hint">
+                  <span class="flip-tip">👆 Click anywhere to flip</span>
+                  <span class="card-timestamp" id="card-timestamp-cue">⏱️ 02:14</span>
+                </div>
+              </div>
+              <!-- Back -->
+              <div class="flashcard-face flashcard-back">
+                <div class="card-chip chip-answer">ANSWER & EXPLANATION</div>
+                <div class="card-content" id="card-back-text">Detailed definition and reasoning explained here.</div>
+                <div class="card-footer-hint">
+                  <span class="flip-tip">👆 Click to flip back</span>
+                  <button class="seek-btn" id="btn-card-seek">▶️ Jump to Timestamp</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Navigation & Mastery Buttons -->
+          <div class="flashcard-nav-actions">
+            <button class="nav-arrow-btn" id="btn-prev-card" title="Previous Card (←)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            
+            <div class="mastery-buttons">
+              <button class="mastery-btn need-review" id="btn-mark-review">
+                <span>❌ Need Review</span>
+              </button>
+              <button class="mastery-btn flip-main" id="btn-flip-card">
+                <span>🔄 Flip Card</span>
+              </button>
+              <button class="mastery-btn mastered" id="btn-mark-mastered">
+                <span>✅ Mastered</span>
+              </button>
+            </div>
+
+            <button class="nav-arrow-btn" id="btn-next-card" title="Next Card (→)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="keyboard-hints">
+            <span>Keys: <kbd>Space</kbd> Flip | <kbd>&larr;</kbd> Prev | <kbd>&rarr;</kbd> Next</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: AI LECTURE TUTOR CHAT -->
+      <div class="tab-content" id="tab-chat">
+        <div class="chat-container glass-panel">
+          <div class="chat-header">
+            <div class="tutor-avatar">
+              <span>🤖</span>
+            </div>
+            <div class="tutor-info">
+              <h4>LectureAI Professor & TA</h4>
+              <p>Ask anything about formulas, mechanisms, proofs, or concepts from this lecture.</p>
+            </div>
+          </div>
+
+          <!-- Chat messages scroll area -->
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-bubble bot-msg">
+              <div class="bubble-sender">LectureAI Tutor</div>
+              <div class="bubble-text">
+                Hello! I have thoroughly studied this lecture. Ask me anything about what was explained, request clarification on tricky topics, or ask for real-world examples!
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick suggestion chips -->
+          <div class="chat-suggestions" id="chat-suggestions">
+            <button class="sugg-chip" data-prompt="Can you explain the main concept in simple terms?">Explain simply</button>
+            <button class="sugg-chip" data-prompt="What was the most important formula or mechanism discussed?">Key formulas / mechanisms</button>
+            <button class="sugg-chip" data-prompt="Give me a real-world application of this lecture.">Real-world application</button>
+          </div>
+
+          <!-- Chat input box -->
+          <form class="chat-input-bar" id="form-chat" onsubmit="return false;">
+            <input 
+              type="text" 
+              id="input-chat-query" 
+              class="chat-input-field" 
+              placeholder="Ask a question about this lecture..." 
+              autocomplete="off"
+            />
+            <button type="submit" id="btn-send-chat" class="chat-send-btn" aria-label="Send Message">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- TAB 6: FULL TRANSCRIPT -->
+      <div class="tab-content" id="tab-transcript">
+        <div class="transcript-container glass-panel">
+          <div class="transcript-header">
+            <div class="transcript-search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input 
+                type="text" 
+                id="input-transcript-search" 
+                class="transcript-search-input" 
+                placeholder="Search transcript by keywords..." 
+              />
+            </div>
+            <div class="transcript-stats">
+              <span id="transcript-count-label">0 segments</span>
+            </div>
+          </div>
+          <div class="transcript-scroll-area" id="transcript-segments-container"></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Settings Modal (API Key configuration) -->
+  <div class="modal-backdrop hidden" id="modal-settings">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">⚙️</span>
+          <h3>LectureAI Configuration</h3>
+        </div>
+        <button class="modal-close" id="btn-close-settings" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          LectureAI features a built-in neural NLP extraction engine that works automatically without any external key. 
+          To enable advanced Google Gemini reasoning and generative summaries, you can provide your free Google Gemini API key below.
+        </p>
+
+        <div class="form-group">
+          <label for="input-api-key" class="form-label">Google Gemini API Key (Optional)</label>
+          <div class="input-with-toggle">
+            <input 
+              type="password" 
+              id="input-api-key" 
+              class="form-input" 
+              placeholder="AIzaSy..." 
+            />
+            <button type="button" class="btn-toggle-vis" id="btn-toggle-key-vis" title="Show/Hide">👁️</button>
+          </div>
+          <span class="form-help">
+            Keys are saved locally in your browser. Get a key at 
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.
+          </span>
+        </div>
+
+        <div class="settings-feature-list">
+          <div class="feature-item">
+            <span class="feat-icon">✅</span>
+            <span class="feat-text"><strong>Built-in Fallback:</strong> If no key is set, the app runs smoothly via the embedded intelligent NLP synthesizer.</span>
+          </div>
+          <div class="feature-item">
+            <span class="feat-icon">⚡</span>
+            <span class="feat-text"><strong>Zero Rate Limiting:</strong> Built-in engine works offline and handles long classes without quota limits.</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="secondary-btn" id="btn-clear-settings">Clear Key</button>
+        <button class="primary-btn" id="btn-save-settings">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/export.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/flashcards.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
