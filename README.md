@@ -4,11 +4,13 @@ An intelligent multi-modal academic platform that converts any YouTube class rec
 
 ---
 
-## 🚀 Live Local Application Link
+## 🚀 Live Application
 
-Open your browser and navigate to:
+Try LectureAI here:
 
-👉 **[http://localhost:5000](http://localhost:5000)**
+👉 **[https://lecture-ai-black.vercel.app](https://lecture-ai-black.vercel.app)**
+
+For local development only, run the app on your computer and open `http://localhost:5000` (this address is not accessible to other visitors).
 
 ---
 
@@ -83,4 +85,13 @@ npm start
 node server.js
 ```
 
-Open **[http://localhost:5000](http://localhost:5000)** in any browser.
+Open `http://localhost:5000` in your browser on the same computer running the server.
+
+## ☁️ Deploying to Vercel
+
+1. Push this repository to GitHub and import it into Vercel, or run `vercel` from the project directory.
+2. Keep the project root as the Root Directory. Vercel uses `vercel.json` to run the Express app as a Node.js function and route both the frontend and API through it.
+3. If you want server-provided Gemini AI, add `GEMINI_API_KEY` under **Project Settings → Environment Variables** in Vercel, then redeploy. The app also works without it using the built-in NLP engine. Never commit `.env`; it is excluded by `.gitignore`.
+4. Deploy. The live app is available at **[https://lecture-ai-black.vercel.app](https://lecture-ai-black.vercel.app)**; `/api/health` can be used to check the deployed service.
+
+The project targets Node.js 22.x on Vercel. Local development remains available with `npm install` and `npm start`.
